@@ -41,16 +41,14 @@ git clone https://github.com/aalbrightpdx/quickrepo.git
 
 ```bash
 cd quickrepo
-
-pipx install -e .
 ```
 
-## 🛠 Installation
+## 🛠 Install
 
-From the project directory:
+In the project directory:
 
 ```bash
-pip install -e .
+pip install .
 ```
 
 This creates a system-wide command:
