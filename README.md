@@ -67,6 +67,11 @@ quickrepo --dry-run # Simulate without making changes
 quickrepo -h        # Show help
 ```
 
+Uninstall
+```bash
+pip uninstall githelper
+```
+
 ## 💡 Requirements
 
 - Python 3.6+
