@@ -1,13 +1,8 @@
-# QuickRepo
+<!-- # QuickRepo -->
 
- _____       _      _          ______                 
-|  _  |     (_)    | |         | ___ \                
-| | | |_   _ _  ___| | ________| |_/ /___ _ __   ___  
-| | | | | | | |/ __| |/ /______|    // _ \ '_ \ / _ \ 
-\ \/' / |_| | | (__|   <       | |\ \  __/ |_) | (_) |
- \_/\_\\__,_|_|\___|_|\_\      \_| \_\___| .__/ \___/ 
-                                         | |          
-                                         |_|     
+<p align="center">
+  <img src="assets/quickrepo.png" alt="quickrepo banner" width="40%">
+</p>    
 
 ⚡ An interactive CLI tool for setting up Git repositories quickly, safely, and with a little magic.
 
