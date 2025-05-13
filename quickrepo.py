@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# ╔══════════════════════════════════════════════════════╗
-# ║           Git Repo Setup Tool — by Rue 🧚‍♀️            ║
-# ║   With Smart Repo Rescue, Help Menu & More!          ║
-# ╚══════════════════════════════════════════════════════╝
-
 import os
 import subprocess
 import sys
@@ -15,12 +10,17 @@ import urllib.request
 # ╰──────────────────────────────╯
 DRY_RUN = "--dry-run" in sys.argv
 
+# Optional cleanup: if a file named 'os' exists, remove it
+if os.path.exists("os") and os.path.isfile("os"):
+    print("⚠️ Warning: A file named 'os' exists. Deleting to avoid conflict.")
+    os.remove("os")
+
 # ╭──────────────────────────────╮
 # │  SECTION 1: Help Menu        │
 # ╰──────────────────────────────╯
 def show_help():
     print("""
-Usage: repo-setup.py [options]
+Usage: quickrepo.py [options]
 
 Options:
   --dry-run        Simulate actions without making any changes
@@ -29,19 +29,11 @@ Options:
 Description:
   This script initializes a Git repo, sets up remote origin, creates .gitignore,
   and optionally pushes to GitHub — all interactively and safely.
-
-  Features:
-    - Prompts for Git user info if missing
-    - SSH key check and optional creation
-    - Smart remote conflict detection with GitHub
-    - Option to force push, pull, or compare changes
-    - .gitignore presets for Python or Node
-    - Global default branch name config
 """)
     sys.exit(0)
 
 # ╭──────────────────────────────╮
-# │  SECTION 2: Banner Placeholder │
+# │  SECTION 2: Banner Display   │
 # ╰──────────────────────────────╯
 def print_banner():
     banner = (
@@ -65,8 +57,7 @@ def run_cmd(cmd, capture_output=False, check_success=False):
     if DRY_RUN:
         print(f"[DRY-RUN] Would run: {cmd}")
         return True if check_success else ""
-    result = subprocess.run(cmd, shell=True, text=True,
-                             capture_output=capture_output)
+    result = subprocess.run(cmd, shell=True, text=True, capture_output=capture_output)
     if check_success:
         return result.returncode == 0
     if capture_output:
@@ -117,9 +108,7 @@ def create_ssh_key():
     if choice == 'y':
         email = run_cmd("git config --global user.email", capture_output=True) or input("Enter email for SSH key: ")
         run_cmd(f'ssh-keygen -t ed25519 -C "{email}"')
-        print("✅ SSH key generated. Don't forget to add it to GitHub!")
-    else:
-        print("⚠️ Skipping SSH key creation. You will need one to push via SSH.")
+        print("✅ SSH key generated. Don’t forget to add it to GitHub!")
 
 # ╭──────────────────────────────╮
 # │  SECTION 7: Remote Handling  │
@@ -143,21 +132,29 @@ def repo_exists_on_github(ssh_url):
             return False
     return False
 
+def remote_origin_exists():
+    remotes = run_cmd("git remote", capture_output=True)
+    return "origin" in remotes.splitlines()
+
 # ╭──────────────────────────────╮
 # │  SECTION 8: .gitignore Gen   │
 # ╰──────────────────────────────╯
 def create_gitignore():
+    if os.path.exists(".gitignore"):
+        overwrite = input("⚠️ A .gitignore file already exists. Overwrite it? [y/n]: ").lower()
+        if overwrite != 'y':
+            print("🛑 Skipping .gitignore generation.\n")
+            return
+
     presets = {
-        "python": [
-            "*.pyc", "__pycache__/", ".venv/", "env/", "build/", "dist/", "*.egg-info/"
-        ],
-        "node": [
-            "node_modules/", "dist/", "*.log", "npm-debug.log*", ".env"
-        ]
+        "python": ["*.pyc", "__pycache__/", ".venv/", "env/", "build/", "dist/", "*.egg-info/"],
+        "node": ["node_modules/", "dist/", "*.log", "npm-debug.log*", ".env"]
     }
+
     choice = input("➤ Create .gitignore? Choose [python/node/custom/skip]: ").lower()
     if choice == "skip":
         return
+
     lines = []
     if choice in presets:
         lines = presets[choice]
@@ -168,6 +165,7 @@ def create_gitignore():
             if not line:
                 break
             lines.append(line)
+
     with open(".gitignore", "w") as f:
         f.write("\n".join(lines) + "\n")
     print("✅ .gitignore created.\n")
@@ -224,6 +222,16 @@ def main():
     remote_input = input("➤ Enter SSH path (e.g., username/repo.git): ").strip()
     ssh_url = fix_remote_url(remote_input)
 
+    if remote_origin_exists():
+        existing_url = run_cmd("git remote get-url origin", capture_output=True)
+        print(f"⚠️ A remote named 'origin' already exists:\n   {existing_url}")
+        confirm = input("Replace it with the new one? [y/n]: ").lower()
+        if confirm != 'y':
+            print("❌ Aborting remote setup.")
+            sys.exit(1)
+        run_cmd("git remote remove origin")
+        print("➖ Removed existing remote.\n")
+
     if repo_exists_on_github(ssh_url):
         print(f"⚠️ That repo already exists on GitHub:\n   {ssh_url}")
         confirm = input("Are you trying to link this folder to that repo? [y/n]: ").lower()
@@ -266,7 +274,11 @@ def main():
     create_gitignore()
 
     run_cmd("git add .")
-    print("✅ Staged all files.\n")
+    changes = run_cmd("git diff --cached --name-only", capture_output=True)
+    if not changes:
+        print("⚠️ No files staged. You may already be up to date or using .gitignore.\n")
+    else:
+        print("✅ Staged all files.\n")
 
     commit_message = input("➤ Enter a commit message: ").strip() or "Initial commit"
     run_cmd(f'git commit -m "{commit_message}"')
