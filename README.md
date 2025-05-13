@@ -25,6 +25,26 @@ QuickRepo helps you:
 
 All done via a clean terminal interaction — no guesswork, no accidental overwrites.
 
+## 🧰 Clone the QuickRepo repository to your system:
+
+Open your terminal and run:
+
+```bash
+git clone git@github.com:aalbrightpdx/quickrepo.git
+```
+
+Or, if you prefer HTTPS:
+
+```bash
+git clone https://github.com/aalbrightpdx/quickrepo.git
+```
+
+```bash
+cd quickrepo
+
+pipx install -e .
+```
+
 ## 🛠 Installation
 
 From the project directory:
